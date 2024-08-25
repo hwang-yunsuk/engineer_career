@@ -23,12 +23,13 @@
     </v-row>
     <h5 class="mb-4">その他</h5>
     <v-col cols="6">
-      <v-text-field
+      <v-textarea
         v-model="optionEtc"
+        rows="1"
         variant="solo"
         outlined
         @input="updateSelection"
-      ></v-text-field>
+      ></v-textarea>
     </v-col>
 
     <!-- 全体表示ボタン -->

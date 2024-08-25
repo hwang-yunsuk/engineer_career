@@ -78,17 +78,42 @@
           variant="solo"
         ></v-text-field>
       </v-col>
-      <div class="sub-title mb-2">取得資格</div>
+      <v-row>
+        <v-col cols="4" class="sub-title mb-2">取得資格</v-col>
+        <v-col class="sub-title ml-0 mb-2">取得年月</v-col>
+      </v-row>
       <div v-for="(license, index) in licenses" :key="index" class="d-flex align-center mb-2">
         <v-col class="py-0 ml-2" cols="4">
           <v-text-field
-            v-model="licenses[index].value"
+            v-model="licenses[index].license"
             placeholder="入力してください。"
             clearable
             required
             variant="solo"
           ></v-text-field>
         </v-col>
+        <v-col class="py-0 ml-2" cols="2">
+          <v-select
+            label="資格取得年"
+            v-model="licenses[index].year"
+            variant="outlined"
+            :items="yearList"
+            required
+          >
+          </v-select>
+        </v-col>
+        <div>年</div>
+        <v-col class="py-0 ml-2" cols="1">
+          <v-select
+            label="資格取得月"
+            v-model="licenses[index].month"
+            variant="outlined"
+            :items="monthList"
+            required
+          >
+          </v-select>
+        </v-col>
+        <div>月</div>
         <v-btn
           icon
           class="mb-6"
@@ -157,6 +182,7 @@
       </v-col>
     </v-row>
   </div>
+  <!-- 登録確認ページ移動のダイアログ -->
   <DialogApp
     :dialog="dialogFlg"
     :dialog-title="constVal.DIALOG_TITLE"
@@ -164,6 +190,7 @@
     @setHandleSubmit="handleSubmit"
     @closeDialog="handleDialogClose"
   />
+  <!-- 登録ダイアログ -->
   <DialogApp
     :dialog="dialogRegisterFlg"
     :dialog-title="constVal.DIALOG_TITLE"
@@ -171,6 +198,7 @@
     @setHandleSubmit="handleRegister"
     @closeDialog="handleRegisterDialogClose"
   />
+  <!-- 登録確認画面 -->
   <UserProfileConfirm
     :user-profile-list="userProfile"
     :dialog="profileConfirmFlg"
@@ -181,7 +209,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import BirthdateForm from '../components/BirthdateForm.vue'
 import UserProfileDetail from '../components/UserProfileDetail.vue'
 import UserProfileConfirm from '../components/UserProfileConfirm.vue'
@@ -215,7 +243,11 @@ const userGender = ref('男性') // 初期値を設定
 const userBirthdate = ref(null)
 const userEducation = ref('')
 // 取得資格のフィールドを管理する配列
-const licenses = ref([{ value: '', isLast: true }])
+const licenses = ref([{ value: '', license: '', year: '', month: '', isLast: true }])
+// 取得資格の年リスト
+const yearList = ref([])
+// 取得資格の月リスト
+const monthList = ref([])
 const userAge = ref('')
 // dialog
 const dialogFlg = ref(false)
@@ -238,6 +270,22 @@ const userDetailList = ref([
   }
 ])
 
+onMounted(() => {
+  // 現在の年を取得
+  const currentYear = new Date().getFullYear()
+
+  // 今年から20年前までのリストを作成してセット
+  for (let i = 0; i <= 20; i++) {
+    yearList.value.push(currentYear - i)
+  }
+
+  // 1月から12月までのリストを作成してセット
+  for (let i = 1; i <= 12; i++) {
+    monthList.value.push(i)
+  }
+  initData()
+})
+
 watch(
   () => dialogFlg.value,
   () => {
@@ -257,7 +305,7 @@ watch(
 const addOrRemoveField = (index) => {
   if (licenses.value[index].isLast) {
     // 新しいフィールドを追加
-    licenses.value.push({ value: '', isLast: true })
+    licenses.value.push({ value: '', license: '', year: '', month: '', isLast: true })
     licenses.value[index].isLast = false
   } else {
     // フィールドを削除
@@ -317,9 +365,22 @@ const updateUserProfileDetail = (updatedDetail, index) => {
   userDetailList.value[index] = updatedDetail
 }
 
+// 資格取得を設定（license + year / month)
+const updateLicenses = () => {
+  userProfile.value.licenses.forEach((licenseObj) => {
+    const { license, year, month } = licenseObj
+
+    // license, year, month が全て入力されている場合に value を更新
+    if (license && year && month) {
+      licenseObj.value = `${license} ${year}/${String(month).padStart(2, '0')}`
+    }
+  })
+}
+
 // dialogの「はい」
 const handleSubmit = () => {
   userProfile.value.userDetailList = userDetailList.value
+  updateLicenses()
   profileConfirmFlg.value = true
   dialogFlg.value = false
 }
@@ -356,7 +417,7 @@ const initData = () => {
   userBirthdate.value = null
   userAge.value = ''
   userEducation.value = ''
-  licenses.value = [{ value: '', isLast: true }]
+  licenses.value = [{ value: '', license: '', year: '', month: '', isLast: true }]
   userDetailList.value = [
     {
       no: 1,
