@@ -3,13 +3,14 @@ function registerUserProfile(data) {
   const ss = SpreadsheetApp.openById(SHEET_ID)
   const userProfileSheet = ss.getSheetByName('userProfile')
   const userProfileDetailSheet = ss.getSheetByName('userProfileDetail')
+  const userInfoSheet = ss.getSheetByName('userInfo')
 
   payload = JSON.parse(data)
 
   const userProfileLastRow = userProfileSheet.getLastRow()
 
   // ユーザープロフィール情報を取得し、スプレッドシートに登録
-  const licenses = payload.licenses.map((license) => license.value).join(',')
+  const licenses = payload.licenses.map((license) => license.value).join('\n')
   const userProfileRow = [
     userProfileLastRow,
     payload.userName,
@@ -55,6 +56,22 @@ function registerUserProfile(data) {
     // userProfileDetail シートに行を追加
     userProfileDetailSheet.appendRow(userProfileDetailRow)
   })
+
+  const userInfoLastRow = userInfoSheet.getLastRow()
+
+  // ユーザー情報を取得し、userInfoスプレッドシートに登録
+  const userInfoRow = [
+    userInfoLastRow,
+    payload.userName,
+    payload.userPassWord,
+    payload.userEmail,
+    '一般',
+    true
+  ]
+
+  // userInfo シートに行を追加
+  userInfoSheet.appendRow(userInfoRow)
+
   return JSON.stringify({
     call: true,
     message: '登録完了しました。'

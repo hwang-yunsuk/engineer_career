@@ -30,6 +30,35 @@
           ></v-text-field>
         </v-col>
       </v-row>
+      <div class="sub-title mb-2">パスワード <span class="required-mark">※</span></div>
+      <v-row class="ml-2">
+        <v-col cols="4">
+          <v-text-field
+            v-model="userPassWord"
+            :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+            :type="show1 ? 'text' : 'password'"
+            placeholder="入力してください。"
+            hint="8桁以上、設定してください。"
+            clearable
+            required
+            variant="solo"
+            @click:append="show1 = !show1"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="4">
+          <v-text-field
+            v-model="userPassWordCheck"
+            :append-icon="show2 ? 'mdi-eye' : 'mdi-eye-off'"
+            :type="show2 ? 'text' : 'password'"
+            placeholder="入力してください。"
+            hint="8桁以上、設定してください。"
+            clearable
+            required
+            variant="solo"
+            @click:append="show2 = !show2"
+          ></v-text-field>
+        </v-col>
+      </v-row>
       <div class="sub-title mb-2">E-mail <span class="required-mark">※</span></div>
       <v-col cols="4">
         <v-text-field
@@ -215,6 +244,8 @@ import UserProfileDetail from '../components/UserProfileDetail.vue'
 import UserProfileConfirm from '../components/UserProfileConfirm.vue'
 import searchForm from '../components/searchForm.vue'
 import DialogApp from '../hooks/dialog.vue'
+// @ts-ignore
+import CryptoJS from 'crypto-js'
 import { request } from '../api/utils'
 import { constVal } from '@/const/index.js'
 import { useToast } from 'vue-toast-notification'
@@ -237,6 +268,11 @@ const loading = ref(true)
 // データプロパティを定義
 const userName = ref('')
 const userNameFurikana = ref('')
+const userPassWord = ref('')
+const userPassWordCheck = ref('')
+const show1 = ref(false)
+const show2 = ref(false)
+const secretKey = ref(import.meta.env.VITE_SECRET_KEY)
 const userEmail = ref('')
 const userAdress = ref('')
 const userGender = ref('男性') // 初期値を設定
@@ -291,6 +327,7 @@ watch(
   () => {
     userProfile.value.userName = userName.value
     userProfile.value.userNameFurikana = userNameFurikana.value
+    userProfile.value.userPassWord = setEncryptedPassWord()
     userProfile.value.userEmail = userEmail.value
     userProfile.value.userAdress = userAdress.value
     userProfile.value.userGender = userGender.value
@@ -377,10 +414,16 @@ const updateLicenses = () => {
   })
 }
 
+const setEncryptedPassWord = () => {
+  const encryptedPin = CryptoJS.AES.encrypt(userPassWord.value, secretKey.value).toString()
+  return encryptedPin
+}
+
 // dialogの「はい」
 const handleSubmit = () => {
   userProfile.value.userDetailList = userDetailList.value
   updateLicenses()
+  console.log('userProfile.value : ', userProfile.value)
   profileConfirmFlg.value = true
   dialogFlg.value = false
 }
