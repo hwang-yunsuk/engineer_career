@@ -454,6 +454,8 @@ const handleRegister = async () => {
 const initData = () => {
   userName.value = ''
   userNameFurikana.value = ''
+  userPassWord.value = ''
+  userPassWordCheck.value = ''
   userEmail.value = ''
   userAdress.value = ''
   userGender.value = '男性'

@@ -129,9 +129,9 @@
             </v-col>
             <v-col cols="3" class="px-0 py-0">
               <v-sheet class="meisho" border height="40px">
-                <sheet-footer>{{ formatDateToYYYYMMDD(detail.startDate) }}</sheet-footer>
+                <sheet-footer>{{ detail.startDate }}</sheet-footer>
                 <sheet-footer> 〜 </sheet-footer>
-                <sheet-footer>{{ formatDateToYYYYMMDD(detail.endDate) }}</sheet-footer>
+                <sheet-footer>{{ detail.endDate }}</sheet-footer>
               </v-sheet>
             </v-col>
             <v-col cols="1" class="px-0 py-0">

@@ -11,26 +11,75 @@
         </div>
       </v-row>
       <v-row>
+        <v-col cols="8" class="pb-1 mr-12">期間 <span class="required-mark">※</span></v-col>
+        <v-col class="pb-1">月数</v-col>
+      </v-row>
+      <v-row class="pb-4">
         <v-col cols="4">
-          <datePicker
-            :user-date="localDetail.startDate"
-            :date-label="startDateLabel"
-            @update:updateDate="updateStartDate"
-          />
+          <v-row>
+            <v-col cols="6">
+              <v-select
+                label="開始年"
+                v-model="startYear"
+                variant="outlined"
+                :items="yearList"
+                required
+                hide-details
+              >
+              </v-select>
+            </v-col>
+            <div class="align-bottom">年</div>
+            <v-col cols="4">
+              <v-select
+                label="開始月"
+                v-model="startMonth"
+                variant="outlined"
+                :items="monthList"
+                required
+                hide-details
+              >
+              </v-select>
+            </v-col>
+            <div class="align-bottom">月</div>
+          </v-row>
         </v-col>
-        <v-col class="d-flex separator" cols="1">
-          <div class="separator-size">〜</div>
-        </v-col>
+        <div class="separator-size">〜</div>
         <v-col cols="4">
-          <datePicker
-            :user-date="localDetail.endDate"
-            :date-label="endDateLabel"
-            @update:updateDate="updateEndDate"
-          />
+          <v-row>
+            <v-col cols="6">
+              <v-select
+                label="終了年"
+                v-model="endYear"
+                variant="outlined"
+                :items="yearList"
+                required
+                hide-details
+              >
+              </v-select>
+            </v-col>
+            <div class="align-bottom">年</div>
+            <v-col cols="4">
+              <v-select
+                label="終了月"
+                v-model="endMonth"
+                variant="outlined"
+                :items="monthList"
+                required
+                hide-details
+              >
+              </v-select>
+            </v-col>
+            <div class="align-bottom">月</div>
+          </v-row>
         </v-col>
-        <v-col cols="2">
-          <div class="mb-4">月数</div>
-          <v-text-field :value="monthOfNumber" disabled variant="solo" outlined></v-text-field>
+        <v-col cols="1">
+          <v-text-field
+            :value="monthOfNumber"
+            disabled
+            variant="solo"
+            outlined
+            hide-details
+          ></v-text-field>
         </v-col>
       </v-row>
       <v-col class="pl-0" cols="6">
@@ -97,7 +146,6 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { constObj } from '@/const.js'
 import { useToast } from 'vue-toast-notification'
 import { request } from '../api/utils'
-import datePicker from '@/hooks/datePicker.vue'
 import checkbox from '@/hooks/checkbox.vue'
 
 const props = defineProps({
@@ -117,12 +165,19 @@ const props = defineProps({
 
 const emit = defineEmits(['update:userProfileDetail', 'removeDetail', 'loadingChange'])
 
-const startDateLabel = ref('開始期間')
-const endDateLabel = ref('終了期間')
+const startYear = ref('')
+const startMonth = ref('')
+const endYear = ref('')
+const endMonth = ref('')
+const monthOfNumber = ref('0')
 const osOptionLabel = ref('OS')
 const dbOptionLabel = ref('DataBase')
 const developmentOptionLabel = ref('DevelopmentLanguages')
 const projectPhaseOptionLabel = ref('projectPhase')
+// 取得資格の年リスト
+const yearList = ref([])
+// 取得資格の月リスト
+const monthList = ref([])
 
 const optionList = ref({})
 
@@ -152,14 +207,6 @@ watch(
   { deep: true }
 )
 
-const updateStartDate = (newStartDate) => {
-  localDetail.value.startDate = newStartDate
-}
-
-const updateEndDate = (newEndDate) => {
-  localDetail.value.endDate = newEndDate
-}
-
 const updateOsOption = (value) => {
   localDetail.value.osTypeOption = value
 }
@@ -180,29 +227,36 @@ const remove = () => {
   emit('removeDetail')
 }
 
-const monthOfNumber = computed(() => {
-  if (!localDetail.value.startDate || !localDetail.value.endDate) {
-    return null
+const calculateMonthDifference = () => {
+  if (!startYear.value || !startMonth.value || !endYear.value || !endMonth.value) {
+    localDetail.value.monthOfNumber = 0
+    return
   }
 
-  const start = new Date(localDetail.value.startDate)
-  const end = new Date(localDetail.value.endDate)
+  // 月をMM形式にする
+  const formattedStartMonth = String(startMonth.value).padStart(2, '0')
+  const formattedEndMonth = String(endMonth.value).padStart(2, '0')
 
-  let months = (end.getFullYear() - start.getFullYear()) * 12
-  months += end.getMonth() - start.getMonth()
+  // 日付をYYYY/MM形式で設定
+  localDetail.value.startDate = `${startYear.value}/${formattedStartMonth}`
+  localDetail.value.endDate = `${endYear.value}/${formattedEndMonth}`
 
-  if (end.getDate() < start.getDate()) {
-    months -= 1
-  }
+  const startDate = new Date(startYear.value, startMonth.value - 1)
+  const endDate = new Date(endYear.value, endMonth.value - 1)
 
-  if (months > 0) {
-    localDetail.value.monthOfNumber = months
+  let months = (endDate.getFullYear() - startDate.getFullYear()) * 12
+  months += endDate.getMonth() - startDate.getMonth()
+
+  // 月数が0の場合でも1と表示する
+  if (months >= 0) {
+    localDetail.value.monthOfNumber = months + 1
   } else {
     localDetail.value.monthOfNumber = 0
   }
+}
 
-  return localDetail.value.monthOfNumber
-})
+// Watchers for start and end dates
+watch([startYear, startMonth, endYear, endMonth], calculateMonthDifference)
 
 // OSの選択肢を配列に設定
 const osOptions = computed(() => {
@@ -240,6 +294,16 @@ const initData = async () => {
 }
 
 onMounted(async () => {
+  // 現在の年を取得
+  const currentYear = new Date().getFullYear()
+  // 今年から20年前までのリストを作成してセット
+  for (let i = 0; i <= 40; i++) {
+    yearList.value.push(currentYear - i)
+  }
+  // 1月から12月までのリストを作成してセット
+  for (let i = 1; i <= 12; i++) {
+    monthList.value.push(i)
+  }
   // init処理
   await initData()
 })
@@ -261,7 +325,12 @@ onMounted(async () => {
 }
 .separator-size {
   font-size: 25px;
-  margin-top: 10px;
+  align-content: center;
+  margin-right: 30px;
+}
+.align-bottom {
+  align-content: end;
+  padding-bottom: 15px;
 }
 .required-mark {
   color: red;
