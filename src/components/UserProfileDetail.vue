@@ -169,7 +169,7 @@ const startYear = ref('')
 const startMonth = ref('')
 const endYear = ref('')
 const endMonth = ref('')
-const monthOfNumber = ref('0')
+const monthOfNumber = ref(0)
 const osOptionLabel = ref('OS')
 const dbOptionLabel = ref('DataBase')
 const developmentOptionLabel = ref('DevelopmentLanguages')
@@ -249,8 +249,10 @@ const calculateMonthDifference = () => {
 
   // 月数が0の場合でも1と表示する
   if (months >= 0) {
+    monthOfNumber.value = months + 1
     localDetail.value.monthOfNumber = months + 1
   } else {
+    monthOfNumber.value = 0
     localDetail.value.monthOfNumber = 0
   }
 }
