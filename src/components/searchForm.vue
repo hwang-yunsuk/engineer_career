@@ -369,7 +369,6 @@ const handleClickLogin = async () => {
   } else {
     errorMessages.value = loginResult.message
   }
-  console.log('loginResult.data : ', loginResult.data)
   loadingLoginForm.value = false
 }
 
