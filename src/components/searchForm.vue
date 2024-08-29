@@ -7,7 +7,79 @@
     @keydown.esc="closeDialog"
     @update:model-value="updateDialog"
   >
-    <v-card title="エンジニア情報検索">
+    <v-card v-if="!hideSearchForm" title="ユーザー認証" class="auth-box" height="500" width="700">
+      <v-overlay :model-value="loadingLoginForm" class="align-center justify-center">
+        <v-progress-circular color="primary" size="64" indeterminate></v-progress-circular>
+        <div justify="center"><h3>loading...</h3></div>
+      </v-overlay>
+      <div class="text-center">
+        <div class="input-box mt-7">
+          <div class="sub-title mb-2">E-mail <span class="required-mark">※</span></div>
+          <v-col class="text-field-email" cols="5">
+            <v-text-field
+              v-model="userLoginEmail"
+              placeholder="入力してください。"
+              clearable
+              required
+              variant="solo"
+            ></v-text-field>
+          </v-col>
+        </div>
+        <div class="input-box">
+          <div class="sub-title mb-2">パスワード <span class="required-mark">※</span></div>
+          <v-col class="text-field-password" cols="6">
+            <v-text-field
+              v-model="userLoginPassWord"
+              :append-icon="passWordShow ? 'mdi-eye' : 'mdi-eye-off'"
+              :type="passWordShow ? 'text' : 'password'"
+              placeholder="入力してください。"
+              clearable
+              required
+              variant="solo"
+              @click:append="passWordShow = !passWordShow"
+            ></v-text-field>
+          </v-col>
+        </div>
+        <div v-if="errorMessages.length">
+          <ul>
+            <li v-for="(message, index) in errorMessages" :key="index">
+              <span class="message-style">{{ message }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <v-row class="evenly mt-3">
+        <v-col class="ml-10" cols="3">
+          <v-btn
+            class="text-none"
+            color="primary"
+            size="large"
+            variant="outlined"
+            min-width="100"
+            block
+            @click="handleClickLogin"
+          >
+            <v-icon class="mr-2">mdi-checkbox-marked-circle</v-icon>
+            ログイン
+          </v-btn>
+        </v-col>
+        <v-col cols="3">
+          <v-btn
+            class="text-none"
+            color="error"
+            size="large"
+            variant="outlined"
+            min-width="100"
+            block
+            @click="closeDialog"
+          >
+            <v-icon class="mr-2">mdi-close</v-icon>
+            閉じる
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-card>
+    <v-card v-else title="エンジニア情報検索">
       <div class="ml-6 mb-3">検索情報一覧</div>
       <v-data-table-server
         v-model:items-per-page="itemsPerPage"
@@ -229,9 +301,17 @@ const emit = defineEmits(['update:dialog'])
 // toast
 const $toast = useToast()
 
+// ユーザー認証
+const userLoginEmail = ref('')
+const userLoginPassWord = ref('')
+const passWordShow = ref(false)
+const hideSearchForm = ref(false)
+const errorMessages = ref([])
+
 const showSearchForm = ref(props.dialog)
 const itemsPerPage = ref(5)
 const loading = ref(false)
+const loadingLoginForm = ref(false)
 const totalItems = ref(0)
 const userSearchName = ref('')
 const userSearchEmail = ref('')
@@ -272,6 +352,27 @@ const updateDialog = (value) => {
   emit('update:dialog', value)
 }
 
+const handleClickLogin = async () => {
+  loadingLoginForm.value = true
+  errorMessages.value = []
+
+  const payload = {
+    userLoginEmail: userLoginEmail.value,
+    userLoginPassWord: userLoginPassWord.value
+  }
+
+  const loginResult = await request('apiUserLogin', payload)
+  if (loginResult.call) {
+    $toast.success('ログインしました。')
+    loadingLoginForm.value = false
+    hideSearchForm.value = true
+  } else {
+    errorMessages.value = loginResult.message
+  }
+  console.log('loginResult.data : ', loginResult.data)
+  loadingLoginForm.value = false
+}
+
 // 検索API
 const handleSearchItems = async () => {
   loading.value = true
@@ -303,6 +404,9 @@ const initData = () => {
   searchItemList.value = []
   userDetailList.value = []
   showUserDetail.value = false
+  userLoginEmail.value = ''
+  userLoginPassWord.value = ''
+  errorMessages.value = []
 }
 </script>
 
@@ -315,5 +419,35 @@ const initData = () => {
 }
 .text-pre-line {
   white-space: pre-line;
+}
+.required-mark {
+  color: red;
+}
+.sub-title {
+  width: 370px !important;
+  text-align: left;
+}
+.text-center {
+  text-align: center;
+}
+.evenly {
+  justify-content: space-evenly;
+  flex: 0 0 auto;
+}
+.input-box {
+  text-align: -webkit-center;
+}
+.auth-box {
+  align-self: center;
+}
+.text-field-email {
+  max-width: 55% !important;
+}
+.text-field-password {
+  max-width: 61% !important;
+  margin-left: 40px;
+}
+.message-style {
+  color: red;
 }
 </style>

@@ -4,3 +4,4 @@
 let SHEET_ID = PropertiesService.getScriptProperties().getProperty('SHEET_ID')
 let SLACK_TOKEN_MAIN = PropertiesService.getScriptProperties().getProperty('SLACK_TOKEN_MAIN')
 let SLACK_TOKEN_TEST = PropertiesService.getScriptProperties().getProperty('SLACK_TOKEN_TEST')
+let SECRET_KEY = PropertiesService.getScriptProperties().getProperty('SECRET_KEY')
