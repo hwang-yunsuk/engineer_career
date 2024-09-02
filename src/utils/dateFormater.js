@@ -9,3 +9,18 @@ export function formatDateToYYYYMMDD(date) {
 
   return `${year}-${month}-${day}`
 }
+
+export function formatDateToYYYYMM(date) {
+  if (!date) {
+    return null
+  }
+
+  const [year, month] = date.split('/')
+
+  return { year: year, month: month }
+}
+
+export function formatYYYYMMDDToDate(date) {
+  const [year, month, day] = date.split('-').map(Number)
+  return new Date(Date.UTC(year, month - 1, day))
+}

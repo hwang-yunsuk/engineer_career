@@ -129,7 +129,8 @@ const updateSelection = () => {
   )
 
   if (optionEtc.value) {
-    selectedItems.push(optionEtc.value)
+    // その他入力フラグ
+    selectedItems.push(optionEtc.value, { optionEtcEdit: `(${optionEtc.value})` })
   }
 
   emit('update:selectOption', selectedItems)

@@ -37,6 +37,7 @@
               required
               variant="solo"
               @click:append="passWordShow = !passWordShow"
+              @keyup.enter="handleClickLogin"
             ></v-text-field>
           </v-col>
         </div>
@@ -328,7 +329,7 @@ watch(
 
 const headers = computed(() => {
   return [
-    { title: 'No', align: 'start', key: 'no', width: '80px' },
+    { title: 'No', align: 'start', key: 'detailNo', width: '80px' },
     { title: '氏名', align: 'start', key: 'userName' },
     { title: 'E-mail', key: 'userEmail', align: 'end' },
     { title: '性別', key: 'userGender', align: 'end' },

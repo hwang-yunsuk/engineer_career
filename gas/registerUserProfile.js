@@ -18,10 +18,12 @@ function registerUserProfile(data) {
     payload.userEmail,
     payload.userAdress,
     payload.userGender,
-    payload.userBirthdate.split('T')[0], // "yyyy-mm-dd"形式に変換
+    payload.userBirthdate,
     payload.userAge,
     payload.userEducation,
-    licenses
+    licenses,
+    new Date(),
+    null
   ]
 
   // userProfile シートに行を追加
@@ -50,7 +52,9 @@ function registerUserProfile(data) {
       dbTypeOption,
       developmentTypeOption,
       projectPhaseTypeOption,
-      detail.comment
+      detail.comment,
+      new Date(),
+      null
     ]
 
     // userProfileDetail シートに行を追加
@@ -66,7 +70,9 @@ function registerUserProfile(data) {
     payload.userPassWord,
     payload.userEmail,
     '一般',
-    true
+    true,
+    new Date(),
+    null
   ]
 
   // userInfo シートに行を追加

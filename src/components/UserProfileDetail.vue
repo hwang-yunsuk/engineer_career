@@ -165,11 +165,11 @@ const props = defineProps({
 
 const emit = defineEmits(['update:userProfileDetail', 'removeDetail', 'loadingChange'])
 
-const startYear = ref('')
-const startMonth = ref('')
-const endYear = ref('')
-const endMonth = ref('')
-const monthOfNumber = ref(0)
+const startYear = ref(props.modelValue.startYear || '')
+const startMonth = ref(props.modelValue.startMonth || '')
+const endYear = ref(props.modelValue.endYear || '')
+const endMonth = ref(props.modelValue.endMonth || '')
+const monthOfNumber = ref(props.modelValue.monthOfNumber || 0)
 const osOptionLabel = ref('OS')
 const dbOptionLabel = ref('DataBase')
 const developmentOptionLabel = ref('DevelopmentLanguages')
@@ -178,9 +178,7 @@ const projectPhaseOptionLabel = ref('projectPhase')
 const yearList = ref([])
 // 取得資格の月リスト
 const monthList = ref([])
-
 const optionList = ref({})
-
 const localDetail = ref({ ...props.modelValue })
 
 // toast
@@ -192,6 +190,11 @@ watch(
   (newVal) => {
     if (localDetail.value !== newVal) {
       localDetail.value = { ...newVal }
+      startYear.value = newVal.startYear || ''
+      startMonth.value = newVal.startMonth || ''
+      endYear.value = newVal.endYear || ''
+      endMonth.value = newVal.endMonth || ''
+      calculateMonthDifference()
     }
   },
   { deep: true }
@@ -304,7 +307,7 @@ onMounted(async () => {
   }
   // 1月から12月までのリストを作成してセット
   for (let i = 1; i <= 12; i++) {
-    monthList.value.push(i)
+    monthList.value.push(String(i).padStart(2, '0'))
   }
   // init処理
   await initData()

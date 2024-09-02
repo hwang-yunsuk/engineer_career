@@ -9,7 +9,12 @@
       <v-col cols="12">
         <v-divider class="border-opacity-25 mb-4"></v-divider>
       </v-col>
-      <div class="sub-title mb-2">氏名 <span class="required-mark">※</span></div>
+      <v-row class="pb-0">
+        <v-col cols="4" class="sub-title mb-0 pb-0">
+          氏名 <span class="required-mark">※</span>
+        </v-col>
+        <v-col class="pl-1 mb-0 pb-0"> フリガナ <span class="required-mark">※</span> </v-col>
+      </v-row>
       <v-row class="ml-2">
         <v-col cols="4">
           <v-text-field
@@ -17,21 +22,27 @@
             placeholder="入力してください。"
             clearable
             required
+            :disabled="!isEditMode ? false : true"
+            width="90%"
             variant="solo"
           ></v-text-field>
         </v-col>
         <v-col cols="4">
           <v-text-field
             v-model="userNameFurikana"
-            placeholder="フリガナ"
+            placeholder="入力してください。"
             clearable
             required
+            :disabled="!isEditMode ? false : true"
+            width="90%"
             variant="solo"
           ></v-text-field>
         </v-col>
       </v-row>
-      <div class="sub-title mb-2">パスワード <span class="required-mark">※</span></div>
-      <v-row class="ml-2">
+      <div v-if="!isEditMode" class="sub-title mb-2">
+        パスワード <span class="required-mark">※</span>
+      </div>
+      <v-row v-if="!isEditMode" class="ml-2">
         <v-col cols="4">
           <v-text-field
             v-model="userPassWord"
@@ -67,6 +78,8 @@
           placeholder="johndoe@gmail.com"
           clearable
           required
+          width="90%"
+          :disabled="!isEditMode ? false : true"
           type="email"
           variant="solo"
         ></v-text-field>
@@ -79,6 +92,7 @@
           placeholder="入力してください。"
           clearable
           required
+          width="95%"
           variant="solo"
         ></v-text-field>
       </v-col>
@@ -138,11 +152,12 @@
             v-model="licenses[index].month"
             variant="outlined"
             :items="monthList"
+            width="120%"
             required
           >
           </v-select>
         </v-col>
-        <div>月</div>
+        <div class="ml-5">月</div>
         <v-btn
           icon
           class="mb-6"
@@ -192,10 +207,10 @@
           @click.stop="toggleDialog"
         >
           <v-icon class="mr-2">mdi-checkbox-marked-circle</v-icon>
-          登録
+          {{ submitButtonLabel }}
         </v-btn>
       </v-col>
-      <v-col cols="6">
+      <v-col v-if="!isEditMode" cols="6">
         <v-btn
           class="text-none"
           color="secondary"
@@ -211,6 +226,19 @@
       </v-col>
     </v-row>
   </div>
+  <!-- 登録確認画面 -->
+  <UserProfileConfirm
+    :user-profile-list="userProfile"
+    :dialog="profileConfirmFlg"
+    @hanldleSubmit="hanldleUserProfileSubmit"
+    @closeDialog="handleProfileConfirmClose"
+  />
+  <searchForm :dialog="searchDialog" @update:dialog="updateSearchDialog" />
+  <userInfoForm
+    :dialog="userInfoDialog"
+    @update:dialog="updateUserInfoDialog"
+    @userInfoEdit="handleUserInfoEdit"
+  />
   <!-- 登録確認ページ移動のダイアログ -->
   <DialogApp
     :dialog="dialogFlg"
@@ -227,37 +255,40 @@
     @setHandleSubmit="handleRegister"
     @closeDialog="handleRegisterDialogClose"
   />
-  <!-- 登録確認画面 -->
-  <UserProfileConfirm
-    :user-profile-list="userProfile"
-    :dialog="profileConfirmFlg"
-    @hanldleSubmit="hanldleUserProfileSubmit"
-    @closeDialog="handleProfileConfirmClose"
-  />
-  <searchForm :dialog="searchDialog" @update:dialog="updateSearchDialog" />
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import BirthdateForm from '../components/BirthdateForm.vue'
 import UserProfileDetail from '../components/UserProfileDetail.vue'
 import UserProfileConfirm from '../components/UserProfileConfirm.vue'
 import searchForm from '../components/searchForm.vue'
+import userInfoForm from '../components/userInfoForm.vue'
 import DialogApp from '../hooks/dialog.vue'
 // @ts-ignore
 import CryptoJS from 'crypto-js'
 import { request } from '../api/utils'
 import { constVal } from '@/const/index.js'
 import { useToast } from 'vue-toast-notification'
+import { processOption, parseLicenses } from '@/utils/textFormater.js'
+import {
+  formatDateToYYYYMM,
+  formatYYYYMMDDToDate,
+  formatDateToYYYYMMDD
+} from '@/utils/dateFormater.js'
 
 const props = defineProps({
   searchDialog: {
     type: Boolean,
     default: false
+  },
+  userInfoDialog: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['update:search-dialog'])
+const emit = defineEmits(['update:search-dialog', 'update:userInfo-dialog'])
 
 // toast
 const $toast = useToast()
@@ -290,6 +321,7 @@ const dialogFlg = ref(false)
 const dialogRegisterFlg = ref(false)
 const profileConfirmFlg = ref(false)
 const userProfile = ref({})
+const isEditMode = ref(false)
 const userDetailList = ref([
   {
     no: 1,
@@ -317,7 +349,7 @@ onMounted(() => {
 
   // 1月から12月までのリストを作成してセット
   for (let i = 1; i <= 12; i++) {
-    monthList.value.push(i)
+    monthList.value.push(String(i).padStart(2, '0'))
   }
   initData()
 })
@@ -360,10 +392,14 @@ const addDetail = () => {
     no: userDetailList.value.length + 1,
     startDate: null,
     endDate: null,
+    startYear: '',
+    startMonth: '',
+    endYear: '',
+    endMonth: '',
+    monthOfNumber: '',
     businessCategory: '',
     systemName: '',
     workDetails: '',
-    monthOfNumber: '',
     osTypeOption: [],
     dbTypeOption: [],
     developmentTypeOption: [],
@@ -422,8 +458,8 @@ const setEncryptedPassWord = () => {
 // dialogの「はい」
 const handleSubmit = () => {
   userProfile.value.userDetailList = userDetailList.value
+
   updateLicenses()
-  console.log('userProfile.value : ', userProfile.value)
   profileConfirmFlg.value = true
   dialogFlg.value = false
 }
@@ -435,20 +471,57 @@ const handleProfileConfirmClose = () => {
 // 登録API
 const handleRegister = async () => {
   loading.value = true
+
+  const userProfileCopy = JSON.parse(JSON.stringify(userProfile.value))
+
+  // userBirthdate
+  userProfileCopy.userBirthdate = formatDateToYYYYMMDD(userProfile.value.userBirthdate)
+
+  userProfileCopy.userDetailList.forEach((entry) => {
+    entry.osTypeOption = removeOptionEtcEdit(entry.osTypeOption)
+    entry.dbTypeOption = removeOptionEtcEdit(entry.dbTypeOption)
+    entry.developmentTypeOption = removeOptionEtcEdit(entry.developmentTypeOption)
+    entry.projectPhaseTypeOption = removeOptionEtcEdit(entry.projectPhaseTypeOption)
+  })
+
+  let message = ''
+
   // 提出API
-  const registerResult = await request('registerUserProfile', userProfile.value)
-  if (!registerResult.call) {
-    $toast.error('登録に失敗しました。')
-    loading.value = false
-    dialogRegisterFlg.value = false
-    profileConfirmFlg.value = false
-    return false
+  if (!isEditMode.value) {
+    const registerResult = await request('registerUserProfile', userProfileCopy)
+    if (!registerResult.call) {
+      $toast.error('登録に失敗しました。')
+      loading.value = false
+      dialogRegisterFlg.value = false
+      profileConfirmFlg.value = false
+      return false
+    } else {
+      message = registerResult.message
+    }
+  } else {
+    // 修正モード
+    const registerResult = await request('updateUserProfile', userProfileCopy)
+    if (!registerResult.call) {
+      $toast.error('修正に失敗しました。')
+      loading.value = false
+      dialogRegisterFlg.value = false
+      profileConfirmFlg.value = false
+      return false
+    } else {
+      message = registerResult.message
+    }
   }
   loading.value = false
   dialogRegisterFlg.value = false
   profileConfirmFlg.value = false
+  isEditMode.value = false // 修正モードを解除
   initData()
-  $toast.success(registerResult.message)
+  $toast.success(message)
+}
+
+// 削除関数を定義
+function removeOptionEtcEdit(array) {
+  return array.filter((item) => !(item && item.hasOwnProperty('optionEtcEdit')))
 }
 
 const initData = () => {
@@ -465,9 +538,13 @@ const initData = () => {
   licenses.value = [{ value: '', license: '', year: '', month: '', isLast: true }]
   userDetailList.value = [
     {
-      no: 1,
+      detailNo: 1,
       startDate: null,
       endDate: null,
+      startYear: '',
+      startMonth: '',
+      endYear: '',
+      endMonth: '',
       monthOfNumber: '',
       systemName: '',
       workDetails: '',
@@ -479,6 +556,49 @@ const initData = () => {
     }
   ]
 }
+
+// 子コンポーネントから受け取る編集データのハンドラーを修正
+const handleUserInfoEdit = (item) => {
+  // 編集モードに変更
+  isEditMode.value = true
+  // 子コンポーネントから送られてきたデータを親にセット
+  userName.value = item.userName
+  userNameFurikana.value = item.userNameFurikana
+  userEmail.value = item.userEmail
+  userAdress.value = item.userAdress
+  userGender.value = item.userGender
+  userBirthdate.value = formatYYYYMMDDToDate(item.userBirthdate)
+  userAge.value = item.userAge
+  userEducation.value = item.userEducation
+  licenses.value = parseLicenses(item.licenses) // 資格情報を解析してセットする関数
+
+  // userDetailList をセット
+  userDetailList.value = item.userDetailList.map((detail) => ({
+    detailNo: detail.detailNo,
+    startDate: detail.startDate,
+    endDate: detail.endDate,
+    startYear: formatDateToYYYYMM(detail.startDate).year,
+    startMonth: formatDateToYYYYMM(detail.startDate).month,
+    endYear: formatDateToYYYYMM(detail.endDate).year,
+    endMonth: formatDateToYYYYMM(detail.endDate).month,
+    monthOfNumber: detail.monthOfNumber,
+    businessCategory: detail.businessCategory,
+    systemName: detail.systemName,
+    workDetails: detail.workDetails,
+    osTypeOption: detail.osTypeOption ? processOption(detail.osTypeOption) : [],
+    dbTypeOption: detail.dbTypeOption ? processOption(detail.dbTypeOption) : [],
+    developmentTypeOption: detail.developmentTypeOption
+      ? processOption(detail.developmentTypeOption)
+      : [],
+    projectPhaseTypeOption: detail.projectPhaseTypeOption
+      ? processOption(detail.projectPhaseTypeOption)
+      : [],
+    comment: detail.comment
+  }))
+}
+
+// ボタンのラベルを動的に設定
+const submitButtonLabel = computed(() => (isEditMode.value ? '修正' : '登録'))
 
 const handleClickClear = () => {
   initData()
@@ -498,6 +618,10 @@ const handleLoading = (value) => {
 
 const updateSearchDialog = (value) => {
   emit('update:search-dialog', value)
+}
+
+const updateUserInfoDialog = (value) => {
+  emit('update:userInfo-dialog', value)
 }
 </script>
 

@@ -22,5 +22,23 @@ export function arrayToCommaString(array) {
     return null
   }
 
-  return array.join('、')
+  // optionEtcEdit のオブジェクトを探す
+  const optionEtcIndex = array.findIndex((item) => typeof item === 'object' && item.optionEtcEdit)
+  if (optionEtcIndex === -1) {
+    return array.join('、')
+  }
+
+  const optionEtcEditValue = array[optionEtcIndex].optionEtcEdit.replace(/^\(|\)$/g, '') // カッコを取り除く
+
+  // 配列内の文字列と optionEtcEditValue を比較して一致する場合に置換
+  const processedArray = array
+    .filter((item, index) => index !== optionEtcIndex) // optionEtcEditのオブジェクトを除外
+    .map((item) => {
+      if (typeof item === 'string' && item === optionEtcEditValue) {
+        return array[optionEtcIndex].optionEtcEdit // カッコ付きの値に置換
+      }
+      return item
+    })
+
+  return processedArray.join('、')
 }

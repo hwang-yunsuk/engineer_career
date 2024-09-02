@@ -15,6 +15,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { formatYYYYMMDDToDate } from '@/utils/dateFormater.js'
 import datePicker from '@/hooks/datePicker.vue'
 
 // Propsの定義
@@ -76,6 +77,11 @@ const calculateAge = (birthDate) => {
   if (!birthDate) {
     localUserAge.value = null
     emit('update:userBirthdate', null)
+  }
+
+  // birthDateがDate型でない場合、yyyy-mm-dd形式の文字列と仮定してDate型に変換
+  if (!(birthDate instanceof Date)) {
+    birthDate = formatYYYYMMDDToDate(birthDate)
   }
 
   const today = new Date()

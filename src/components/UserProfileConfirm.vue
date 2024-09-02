@@ -119,7 +119,7 @@
       </v-col>
       <!-- 詳細項目を繰り返し表示 -->
       <div v-for="(detail, index) in userProfileDetail" :key="index">
-        <v-col class="pl-6">No.{{ detail.no }}</v-col>
+        <v-col class="pl-6">No.{{ index + 1 }}</v-col>
         <v-col class="d-flex" cols="12">
           <v-row>
             <v-col cols="1" class="pr-0 py-0">

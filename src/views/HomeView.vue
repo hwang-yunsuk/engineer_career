@@ -1,5 +1,10 @@
 <template>
-  <UserProfileForm :search-dialog="searchDialog" @update:search-dialog="updateSearchDialog" />
+  <UserProfileForm
+    :search-dialog="searchDialog"
+    :userInfo-dialog="userInfoDialog"
+    @update:search-dialog="updateSearchDialog"
+    @update:userInfo-dialog="updateUserInfoDialog"
+  />
 </template>
 
 <script setup>
@@ -9,12 +14,19 @@ const props = defineProps({
   searchDialog: {
     type: Boolean,
     default: false
+  },
+  userInfoDialog: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['update:search-dialog'])
+const emit = defineEmits(['update:search-dialog', 'update:userInfo-dialog'])
 
 const updateSearchDialog = (value) => {
   emit('update:search-dialog', value)
+}
+const updateUserInfoDialog = (value) => {
+  emit('update:userInfo-dialog', value)
 }
 </script>
