@@ -170,7 +170,6 @@ const headers = computed(() => {
 })
 
 onMounted(() => {
-  console.log('onMounted check')
   initData()
 })
 
