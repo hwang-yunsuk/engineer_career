@@ -30,3 +30,9 @@ const updateUserInfoDialog = (value) => {
   emit('update:userInfo-dialog', value)
 }
 </script>
+
+<style>
+.v-toast {
+  z-index: 9999 !important;
+}
+</style>

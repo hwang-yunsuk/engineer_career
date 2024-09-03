@@ -151,7 +151,7 @@ watch(
   () => props.dialog,
   (newVal) => {
     showUserInfoForm.value = newVal
-    if (hideUserInfoForm) {
+    if (hideUserInfoForm.value && showUserInfoForm.value) {
       handleClickSearch()
     }
   }
@@ -170,6 +170,8 @@ const headers = computed(() => {
 })
 
 onMounted(() => {
+  userLoginEmail.value = ''
+  userLoginPassWord.value = ''
   initData()
 })
 
@@ -223,7 +225,7 @@ const handleClickSearch = async () => {
     loading.value = false
     hideUserInfoForm.value = true
   } else {
-    errorMessages.value = loginResult.message
+    $toast.error(loginResult.message)
   }
   loading.value = false
 }
@@ -235,9 +237,8 @@ const handleEditClick = (item) => {
 }
 
 const initData = () => {
-  userLoginEmail.value = ''
-  userLoginPassWord.value = ''
   errorMessages.value = []
+  searchItemList.value = []
 }
 </script>
 

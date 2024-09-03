@@ -81,6 +81,10 @@
       </v-row>
     </v-card>
     <v-card v-else title="エンジニア情報検索">
+      <v-overlay :model-value="loadingDetailForm" class="align-center justify-center">
+        <v-progress-circular color="primary" size="64" indeterminate></v-progress-circular>
+        <div justify="center"><h3>loading...</h3></div>
+      </v-overlay>
       <div class="ml-6 mb-3">検索情報一覧</div>
       <v-data-table-server
         v-model:items-per-page="itemsPerPage"
@@ -91,9 +95,7 @@
       >
         <!-- カスタムアクション（詳細ボタン）を追加 -->
         <template v-slot:item.actions="{ item }">
-          <v-btn color="primary" variant="outlined" @click="handleDetailClick(item.userDetailList)">
-            詳細
-          </v-btn>
+          <v-btn color="primary" variant="outlined" @click="handleDetailClick(item)"> 詳細 </v-btn>
         </template>
         <template v-slot:top>
           <tr>
@@ -107,6 +109,7 @@
                 required
                 variant="solo"
                 width="200px"
+                @keyup.enter="handleSearchItems"
               ></v-text-field>
             </td>
             <td>
@@ -118,6 +121,7 @@
                 required
                 variant="solo"
                 width="200px"
+                @keyup.enter="handleSearchItems"
               ></v-text-field>
             </td>
             <td>
@@ -274,6 +278,17 @@
         <v-spacer></v-spacer>
         <v-btn
           class="ma-4 text-none"
+          size="large"
+          color="primary"
+          variant="outlined"
+          width="90px"
+          @click="handleClickPrint"
+        >
+          <v-icon class="mr-2">mdi-printer</v-icon>
+          印刷
+        </v-btn>
+        <v-btn
+          class="ma-4 text-none"
           text="閉じる"
           size="large"
           color="error"
@@ -313,11 +328,13 @@ const showSearchForm = ref(props.dialog)
 const itemsPerPage = ref(5)
 const loading = ref(false)
 const loadingLoginForm = ref(false)
+const loadingDetailForm = ref(false)
 const totalItems = ref(0)
 const userSearchName = ref('')
 const userSearchEmail = ref('')
 const searchItemList = ref([])
 const userDetailList = ref([])
+const userProfilePrintItem = ref([])
 const showUserDetail = ref(false)
 
 watch(
@@ -394,8 +411,32 @@ const handleSearchItems = async () => {
 
 // 詳細ボタンクリックのハンドラー
 const handleDetailClick = (item) => {
-  userDetailList.value = item
+  userDetailList.value = item.userDetailList
+  userProfilePrintItem.value = item
   showUserDetail.value = true
+}
+
+// ユーザーフロフィールを印刷
+const handleClickPrint = async () => {
+  if (userProfilePrintItem.value.length < 1) {
+    $toast.error('印刷データを見つかりません。')
+    return
+  }
+
+  loadingDetailForm.value = true
+
+  const payload = {
+    userProfile: userProfilePrintItem.value
+  }
+
+  const result = await request('apiUserProfilePrint', payload)
+  if (!result.call) {
+    $toast.error('印刷に失敗しました。')
+    loadingDetailForm.value = false
+    return
+  }
+  loadingDetailForm.value = false
+  $toast.success(result.message)
 }
 
 const initData = () => {

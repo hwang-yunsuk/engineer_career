@@ -602,6 +602,12 @@ const submitButtonLabel = computed(() => (isEditMode.value ? '修正' : '登録'
 
 const handleClickClear = () => {
   initData()
+  $toast.open({
+    type: 'success',
+    message: 'クリアしました。',
+    position: 'bottom-right',
+    zIndex: '9999'
+  })
 }
 
 const handleDialogClose = () => {
