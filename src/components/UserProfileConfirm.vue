@@ -79,10 +79,24 @@
           </v-col>
           <v-col cols="1" class="px-0 py-0">
             <v-sheet class="text-center meisho" color="cyan-darken-3" border height="40px">
-              <sheet-footer>住所</sheet-footer>
+              <sheet-footer>所属会社</sheet-footer>
             </v-sheet>
           </v-col>
           <v-col cols="6" class="px-0 py-0">
+            <v-sheet class="meisho" border height="40px">
+              <sheet-footer>{{ userProfile.userComperny }}</sheet-footer>
+            </v-sheet>
+          </v-col>
+        </v-row>
+      </v-col>
+      <v-col class="d-flex" cols="12">
+        <v-row>
+          <v-col cols="1" class="pr-0 py-0">
+            <v-sheet class="text-center meisho" color="cyan-darken-3" border height="40px">
+              <sheet-footer>住所</sheet-footer>
+            </v-sheet>
+          </v-col>
+          <v-col cols="10" class="px-0 py-0">
             <v-sheet class="meisho" border height="40px">
               <sheet-footer>{{ userProfile.userAdress }}</sheet-footer>
             </v-sheet>

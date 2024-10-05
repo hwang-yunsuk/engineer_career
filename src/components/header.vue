@@ -18,7 +18,10 @@
 
 <script setup>
 import { request } from '@/api/utils'
+import { ref, onMounted } from 'vue'
 const emit = defineEmits(['open-search', 'open-userInfo'])
+
+const homeUrl = ref('')
 
 const handleClickSearch = () => {
   emit('open-search')
@@ -28,13 +31,16 @@ const handleClickUserInfo = () => {
   emit('open-userInfo')
 }
 
-const handleClickReload = async () => {
+onMounted(async () => {
   try {
     const response = await request('triggerReload')
-    // レスポンスがリロードスクリプトであれば、evalを使って実行
-    window.open(response.url, '_self')
+    homeUrl.value = response.url
   } catch (error) {
     console.error('リロード処理に失敗しました:', error)
   }
+})
+
+const handleClickReload = () => {
+  window.open(homeUrl.value, '_self')
 }
 </script>

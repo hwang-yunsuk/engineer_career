@@ -86,17 +86,70 @@
         <div justify="center"><h3>loading...</h3></div>
       </v-overlay>
       <div class="ml-6 mb-3">検索情報一覧</div>
-      <v-data-table-server
+      <v-data-table
         v-model:items-per-page="itemsPerPage"
+        v-model:page="currentPage"
         :headers="headers"
         :items="searchItemList"
         :items-length="totalItems"
         :loading="loading"
       >
-        <!-- カスタムアクション（詳細ボタン）を追加 -->
+        <!-- No列のカスタム表示 -->
+        <template v-slot:item.detailNo="{ index }">
+          <span>{{ index + 1 }}</span>
+        </template>
+
+        <!-- 氏名列のカスタム表示 -->
+        <template v-slot:item.userName="{ item }">
+          <span>{{ item.userName }}</span>
+        </template>
+
+        <!-- 氏名列のカスタム表示 -->
+        <template v-slot:item.userInitial="{ item }">
+          <v-text-field
+            class="user-initial"
+            v-model="item.userInitial"
+            density="compact"
+            clearable
+            required
+            variant="solo"
+            width="130px"
+            hide-details
+            @input="updateUserInitial(item.userInitial)"
+          ></v-text-field>
+        </template>
+
+        <!-- E-mail列のカスタム表示 -->
+        <template v-slot:item.userEmail="{ item }">
+          <span>{{ item.userEmail }}</span>
+        </template>
+
+        <!-- 性別列のカスタム表示 -->
+        <template v-slot:item.userGender="{ item }">
+          <span>{{ item.userGender }}</span>
+        </template>
+
+        <!-- 生年月日列のカスタム表示 -->
+        <template v-slot:item.userBirthdate="{ item }">
+          <span>{{ item.userBirthdate }}</span>
+        </template>
+
+        <!-- 所属会社列のカスタム表示 -->
+        <template v-slot:item.userComperny="{ item }">
+          <span>{{ item.userComperny }}</span>
+        </template>
+
+        <!-- 住所列のカスタム表示 -->
+        <template v-slot:item.userAdress="{ item }">
+          <span>{{ item.userAdress }}</span>
+        </template>
+
+        <!-- 操作列のカスタム表示 -->
         <template v-slot:item.actions="{ item }">
           <v-btn color="primary" variant="outlined" @click="handleDetailClick(item)"> 詳細 </v-btn>
         </template>
+
+        <!-- 検索フィールド -->
         <template v-slot:top>
           <tr>
             <td>
@@ -109,7 +162,6 @@
                 required
                 variant="solo"
                 width="200px"
-                @keyup.enter="handleSearchItems"
               ></v-text-field>
             </td>
             <td>
@@ -137,7 +189,7 @@
             </td>
           </tr>
         </template>
-      </v-data-table-server>
+      </v-data-table>
       <!-- 詳細項目を繰り返し表示 -->
       <div v-if="showUserDetail" v-for="(detail, index) in userDetailList" :key="index">
         <v-col class="pl-6">No.{{ index + 1 }}</v-col>
@@ -277,6 +329,7 @@
       <template v-slot:actions>
         <v-spacer></v-spacer>
         <v-btn
+          v-if="showUserDetail"
           class="ma-4 text-none"
           size="large"
           color="primary"
@@ -303,7 +356,7 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
 import { useToast } from 'vue-toast-notification'
-import { request } from '../api/utils'
+import { request, pdfDownload } from '../api/utils'
 
 const props = defineProps({
   dialog: {
@@ -326,6 +379,7 @@ const errorMessages = ref([])
 
 const showSearchForm = ref(props.dialog)
 const itemsPerPage = ref(5)
+const currentPage = ref(1)
 const loading = ref(false)
 const loadingLoginForm = ref(false)
 const loadingDetailForm = ref(false)
@@ -336,6 +390,7 @@ const searchItemList = ref([])
 const userDetailList = ref([])
 const userProfilePrintItem = ref([])
 const showUserDetail = ref(false)
+const userInitial = ref('')
 
 watch(
   () => props.dialog,
@@ -346,14 +401,23 @@ watch(
 
 const headers = computed(() => {
   return [
-    { title: 'No', align: 'start', key: 'detailNo', width: '80px' },
-    { title: '氏名', align: 'start', key: 'userName' },
-    { title: 'E-mail', key: 'userEmail', align: 'end' },
-    { title: '性別', key: 'userGender', align: 'end' },
-    { title: '生年月日', key: 'userBirthdate', align: 'end' },
-    { title: '住所', key: 'userAdress', align: 'end' },
-    { title: '操作', key: 'actions', align: 'center' } // 操作列の追加
+    { title: 'No', align: 'start', key: 'detailNo', width: '50px', sortable: true },
+    { title: '氏名', align: 'start', key: 'userName', width: '130px', sortable: true },
+    { title: '略名', align: 'end', key: 'userInitial', width: '100px', sortable: true },
+    { title: 'E-mail', key: 'userEmail', align: 'end', width: '150px', sortable: true },
+    { title: '性別', key: 'userGender', align: 'end', width: '80px', sortable: true },
+    { title: '生年月日', key: 'userBirthdate', align: 'end', width: '110px', sortable: true },
+    { title: '所属会社', key: 'userComperny', align: 'end', width: '150px', sortable: true },
+    { title: '住所', key: 'userAdress', align: 'end', width: '250px', sortable: true },
+    { title: '操作', key: 'actions', align: 'center' }
   ]
+})
+
+// ページネーションされたデータを計算する
+const paginatedItems = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return searchItemList.value.slice(start, end)
 })
 
 onMounted(() => {
@@ -394,9 +458,10 @@ const handleClickLogin = async () => {
 const handleSearchItems = async () => {
   loading.value = true
   const payload = {
-    userName: userSearchName.value,
-    userEmail: userSearchEmail.value
+    userName: userSearchName.value ?? '',
+    userEmail: userSearchEmail.value ?? ''
   }
+
   const searchResult = await request('apiGetSearchItems', payload)
   if (!searchResult.call) {
     $toast.error('検索に失敗しました。')
@@ -418,6 +483,11 @@ const handleDetailClick = (item) => {
 
 // ユーザーフロフィールを印刷
 const handleClickPrint = async () => {
+  if (!showUserDetail.value) {
+    $toast.warning('詳細を押下してください。')
+    return
+  }
+
   if (userProfilePrintItem.value.length < 1) {
     $toast.error('印刷データを見つかりません。')
     return
@@ -426,28 +496,57 @@ const handleClickPrint = async () => {
   loadingDetailForm.value = true
 
   const payload = {
-    userProfile: userProfilePrintItem.value
+    userName: userProfilePrintItem.value.userName,
+    userNameFurikana: userProfilePrintItem.value.userNameFurikana,
+    userInitial: userProfilePrintItem.value.userInitial ?? userInitial.value,
+    userEmail: userProfilePrintItem.value.userEmail,
+    userComperny: userProfilePrintItem.value.userComperny,
+    userAdress: userProfilePrintItem.value.userAdress,
+    userGender: userProfilePrintItem.value.userGender,
+    userBirthdate: userProfilePrintItem.value.userBirthdate,
+    userAge: userProfilePrintItem.value.userAge,
+    userEducation: userProfilePrintItem.value.userEducation,
+    licenses: userProfilePrintItem.value.licenses
   }
 
-  const result = await request('apiUserProfilePrint', payload)
-  if (!result.call) {
-    $toast.error('印刷に失敗しました。')
+  try {
+    const result = await request('apiUserProfilePrint', payload)
+    if (!result.call) {
+      $toast.error('印刷に失敗しました。')
+      loadingDetailForm.value = false
+      return
+    }
+
+    // 略名が設定されていたら、ファイル名を変更
+    if (payload.userInitial) {
+      payload.userName = payload.userInitial
+    }
+
+    // ダウンロード処理
+    pdfDownload(payload.userName, result.data)
+
     loadingDetailForm.value = false
-    return
+    $toast.success(result.message)
+  } catch (error) {
+    $toast.error('印刷に失敗しました。' + error)
+    loadingDetailForm.value = false
   }
-  loadingDetailForm.value = false
-  $toast.success(result.message)
 }
 
 const initData = () => {
   userSearchName.value = ''
   userSearchEmail.value = ''
   searchItemList.value = []
+  userProfilePrintItem.value = []
   userDetailList.value = []
   showUserDetail.value = false
   userLoginEmail.value = ''
   userLoginPassWord.value = ''
   errorMessages.value = []
+}
+
+const updateUserInitial = (newValue) => {
+  userInitial.value = newValue
 }
 </script>
 
@@ -490,5 +589,9 @@ const initData = () => {
 }
 .message-style {
   color: red;
+}
+.user-initial {
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 </style>

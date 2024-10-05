@@ -164,6 +164,7 @@ const headers = computed(() => {
     { title: 'E-mail', key: 'userEmail', align: 'end' },
     { title: '性別', key: 'userGender', align: 'end' },
     { title: '生年月日', key: 'userBirthdate', align: 'end' },
+    { title: '所属会社', key: 'userComperny', align: 'end' },
     { title: '住所', key: 'userAdress', align: 'end' },
     { title: '操作', key: 'actions', align: 'center' } // 操作列の追加
   ]

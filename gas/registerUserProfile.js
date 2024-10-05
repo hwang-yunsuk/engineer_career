@@ -16,6 +16,7 @@ function registerUserProfile(data) {
     payload.userName,
     payload.userNameFurikana,
     payload.userEmail,
+    payload.userComperny,
     payload.userAdress,
     payload.userGender,
     payload.userBirthdate,

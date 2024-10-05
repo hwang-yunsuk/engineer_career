@@ -29,6 +29,11 @@ const vuetify = createVuetify({
       ja: {
         badge: 'バッジ',
         close: '閉じる',
+        open: '開く',
+        input: {
+          clear: 'クリア',
+          appendAction: 'アペンドアクション'
+        },
         dataIterator: {
           noResultsText: '一致するレコードが見つかりません。',
           loadingText: 'アイテムを読み込み中...'

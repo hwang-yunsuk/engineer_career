@@ -84,6 +84,18 @@
           variant="solo"
         ></v-text-field>
       </v-col>
+      <div class="sub-title mb-2">所属会社名 <span class="required-mark">※</span></div>
+      <v-col cols="4">
+        <v-text-field
+          class="ml-2"
+          v-model="userComperny"
+          placeholder="入力してください。"
+          clearable
+          required
+          width="90%"
+          variant="solo"
+        ></v-text-field>
+      </v-col>
       <div class="sub-title mb-2">住所 <span class="required-mark">※</span></div>
       <v-col cols="8">
         <v-text-field
@@ -305,6 +317,7 @@ const show1 = ref(false)
 const show2 = ref(false)
 const secretKey = ref(import.meta.env.VITE_SECRET_KEY)
 const userEmail = ref('')
+const userComperny = ref('')
 const userAdress = ref('')
 const userGender = ref('男性') // 初期値を設定
 const userBirthdate = ref(null)
@@ -361,6 +374,7 @@ watch(
     userProfile.value.userNameFurikana = userNameFurikana.value
     userProfile.value.userPassWord = setEncryptedPassWord()
     userProfile.value.userEmail = userEmail.value
+    userProfile.value.userComperny = userComperny.value
     userProfile.value.userAdress = userAdress.value
     userProfile.value.userGender = userGender.value
     userProfile.value.userBirthdate = userBirthdate.value
@@ -530,6 +544,7 @@ const initData = () => {
   userPassWord.value = ''
   userPassWordCheck.value = ''
   userEmail.value = ''
+  userComperny.value = ''
   userAdress.value = ''
   userGender.value = '男性'
   userBirthdate.value = null
@@ -565,6 +580,7 @@ const handleUserInfoEdit = (item) => {
   userName.value = item.userName
   userNameFurikana.value = item.userNameFurikana
   userEmail.value = item.userEmail
+  userComperny.value = item.userComperny
   userAdress.value = item.userAdress
   userGender.value = item.userGender
   userBirthdate.value = formatYYYYMMDDToDate(item.userBirthdate)

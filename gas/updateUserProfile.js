@@ -15,18 +15,19 @@ function updateUserProfile(data) {
     if (userProfileData[i][1] === payload.userName && userProfileData[i][3] === payload.userEmail) {
       // ユーザープロフィール情報を更新
       const licenses = payload.licenses.map((license) => license.value).join('\n')
-      userProfileSheet.getRange(i + 1, 2, 1, 11).setValues([
+      userProfileSheet.getRange(i + 1, 2, 1, 12).setValues([
         [
           payload.userName,
           payload.userNameFurikana,
           payload.userEmail,
+          payload.userComperny,
           payload.userAdress,
           payload.userGender,
           payload.userBirthdate, // "yyyy-mm-dd"形式に変換
           payload.userAge,
           payload.userEducation,
           licenses,
-          userProfileData[i][10],
+          userProfileData[i][11],
           new Date()
         ]
       ])
@@ -70,7 +71,7 @@ function updateUserProfile(data) {
 
     let detailLastRow = null
     if (!detail.detailNo) {
-      detailLastRow = userProfileDetailData.getLastRow()
+      detailLastRow = userProfileDetailSheet.getLastRow()
     }
 
     userProfileDetailSheet.appendRow([
