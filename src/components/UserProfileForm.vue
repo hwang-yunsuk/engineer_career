@@ -1,211 +1,215 @@
 <template>
-  <div class="mt-15">
-    <v-overlay :model-value="loading" class="align-center justify-center">
-      <v-progress-circular color="primary" size="64" indeterminate></v-progress-circular>
-      <div justify="center"><h3>loading...</h3></div>
-    </v-overlay>
-    <v-card class="mb-8">
-      <v-card-title>エンジニア基本情報登録</v-card-title>
-      <v-col cols="12">
-        <v-divider class="border-opacity-25 mb-4"></v-divider>
-      </v-col>
-      <v-row class="pb-0">
-        <v-col cols="4" class="sub-title mb-0 pb-0">
-          氏名 <span class="required-mark">※</span>
+  <v-form ref="validateForm" :key="formKey" lazy-validation>
+    <div class="mt-15">
+      <v-overlay :model-value="loading" class="align-center justify-center">
+        <v-progress-circular color="primary" size="64" indeterminate></v-progress-circular>
+        <div justify="center"><h3>loading...</h3></div>
+      </v-overlay>
+      <v-card class="mb-8">
+        <v-card-title>エンジニア基本情報登録</v-card-title>
+        <v-col cols="12">
+          <v-divider class="border-opacity-25 mb-4"></v-divider>
         </v-col>
-        <v-col class="pl-1 mb-0 pb-0"> フリガナ <span class="required-mark">※</span> </v-col>
-      </v-row>
-      <v-row class="ml-2">
-        <v-col cols="4">
-          <v-text-field
-            v-model="userName"
-            placeholder="入力してください。"
-            clearable
-            required
-            :disabled="!isEditMode ? false : true"
-            width="90%"
-            variant="solo"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="4">
-          <v-text-field
-            v-model="userNameFurikana"
-            placeholder="入力してください。"
-            clearable
-            required
-            :disabled="!isEditMode ? false : true"
-            width="90%"
-            variant="solo"
-          ></v-text-field>
-        </v-col>
-      </v-row>
-      <div v-if="!isEditMode" class="sub-title mb-2">
-        パスワード <span class="required-mark">※</span>
-      </div>
-      <v-row v-if="!isEditMode" class="ml-2">
-        <v-col cols="4">
-          <v-text-field
-            v-model="userPassWord"
-            :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
-            :type="show1 ? 'text' : 'password'"
-            placeholder="入力してください。"
-            hint="8桁以上、設定してください。"
-            clearable
-            required
-            variant="solo"
-            @click:append="show1 = !show1"
-          ></v-text-field>
-        </v-col>
-        <v-col cols="4">
-          <v-text-field
-            v-model="userPassWordCheck"
-            :append-icon="show2 ? 'mdi-eye' : 'mdi-eye-off'"
-            :type="show2 ? 'text' : 'password'"
-            placeholder="入力してください。"
-            hint="8桁以上、設定してください。"
-            clearable
-            required
-            variant="solo"
-            @click:append="show2 = !show2"
-          ></v-text-field>
-        </v-col>
-      </v-row>
-      <div class="sub-title mb-2">E-mail <span class="required-mark">※</span></div>
-      <v-col cols="4">
-        <v-text-field
-          class="ml-2"
-          v-model="userEmail"
-          placeholder="johndoe@gmail.com"
-          clearable
-          required
-          width="90%"
-          :disabled="!isEditMode ? false : true"
-          type="email"
-          variant="solo"
-        ></v-text-field>
-      </v-col>
-      <div class="sub-title mb-2">所属会社名 <span class="required-mark">※</span></div>
-      <v-col cols="4">
-        <v-text-field
-          class="ml-2"
-          v-model="userComperny"
-          placeholder="入力してください。"
-          clearable
-          required
-          width="90%"
-          variant="solo"
-        ></v-text-field>
-      </v-col>
-      <div class="sub-title mb-2">住所 <span class="required-mark">※</span></div>
-      <v-col cols="8">
-        <v-text-field
-          class="ml-2"
-          v-model="userAdress"
-          placeholder="入力してください。"
-          clearable
-          required
-          width="95%"
-          variant="solo"
-        ></v-text-field>
-      </v-col>
-      <div class="sub-title mb-2">性別 <span class="required-mark">※</span></div>
-      <v-radio-group v-model="userGender" inline required>
-        <div class="ml-4">
-          <v-radio label="男性" value="男性"></v-radio>
-          <v-radio label="女性" value="女性"></v-radio>
+        <v-row class="pb-0">
+          <v-col cols="4" class="sub-title mb-0 pb-0">
+            氏名 <span class="required-mark">※</span>
+          </v-col>
+          <v-col class="pl-1 mb-0 pb-0"> フリガナ <span class="required-mark">※</span> </v-col>
+        </v-row>
+        <v-row class="ml-2">
+          <v-col cols="4">
+            <v-text-field
+              v-model="userName"
+              placeholder="入力してください。"
+              clearable
+              required
+              autocomplete="userName"
+              :disabled="!isEditMode ? false : true"
+              :rules="inputRules.userName"
+              width="90%"
+              variant="solo"
+            ></v-text-field>
+          </v-col>
+          <v-col cols="4">
+            <v-text-field
+              v-model="userNameFurikana"
+              placeholder="入力してください。"
+              clearable
+              required
+              autocomplete="userNameFurikana"
+              :disabled="!isEditMode ? false : true"
+              :rules="inputRules.userNameFurikana"
+              width="90%"
+              variant="solo"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+        <div v-if="!isEditMode" class="sub-title mb-2">
+          パスワード <span class="required-mark">※</span>
         </div>
-      </v-radio-group>
-      <BirthdateForm
-        class="ml-0"
-        :user-birthdate="userBirthdate"
-        :user-age="userAge"
-        @update:userBirthdate="updateBirthdate"
-        @update:userAge="updateAge"
-      />
-      <div class="sub-title mb-2">最終学歴（学校名） <span class="required-mark">※</span></div>
-      <v-col cols="4">
-        <v-text-field
-          class="ml-2"
-          v-model="userEducation"
-          placeholder="入力してください。"
-          clearable
-          required
-          variant="solo"
-        ></v-text-field>
-      </v-col>
-      <v-row>
-        <v-col cols="4" class="sub-title mb-2">取得資格</v-col>
-        <v-col class="sub-title ml-0 mb-2">取得年月</v-col>
-      </v-row>
-      <div v-for="(license, index) in licenses" :key="index" class="d-flex align-center mb-2">
-        <v-col class="py-0 ml-2" cols="4">
+        <v-row v-if="!isEditMode" class="ml-2">
+          <v-col cols="4">
+            <v-text-field
+              v-model="userPassWord"
+              :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
+              :type="show ? 'text' : 'password'"
+              :rules="inputRules.userPassWord"
+              placeholder="入力してください。"
+              autocomplete="new-password"
+              clearable
+              required
+              variant="solo"
+              @click:append="show = !show"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+        <div class="sub-title mb-2">E-mail <span class="required-mark">※</span></div>
+        <v-col cols="4">
           <v-text-field
-            v-model="licenses[index].license"
+            class="ml-2"
+            v-model="userEmail"
+            placeholder="johndoe@gmail.com"
+            clearable
+            required
+            width="90%"
+            autocomplete="email"
+            :disabled="!isEditMode ? false : true"
+            :rules="inputRules.userEmail"
+            type="email"
+            variant="solo"
+          ></v-text-field>
+        </v-col>
+        <div class="sub-title mb-2">所属会社名 <span class="required-mark">※</span></div>
+        <v-col cols="4">
+          <v-text-field
+            class="ml-2"
+            v-model="userComperny"
+            placeholder="入力してください。"
+            clearable
+            required
+            width="90%"
+            variant="solo"
+            :rules="inputRules.userComperny"
+          ></v-text-field>
+        </v-col>
+        <div class="sub-title mb-2">
+          住所
+          <span class="required-mark">※</span>
+          <span class="text-light-gray">市区町村まで</span>
+        </div>
+        <v-col cols="8">
+          <v-text-field
+            class="ml-2"
+            v-model="userAdress"
+            placeholder="入力してください。"
+            autocomplete="street-address"
+            clearable
+            required
+            width="95%"
+            variant="solo"
+            :rules="inputRules.userAdress"
+          ></v-text-field>
+        </v-col>
+        <div class="sub-title mb-2">性別 <span class="required-mark">※</span></div>
+        <v-radio-group v-model="userGender" inline required>
+          <div class="ml-4">
+            <v-radio label="男性" value="男性"></v-radio>
+            <v-radio label="女性" value="女性"></v-radio>
+          </div>
+        </v-radio-group>
+        <BirthdateForm
+          class="ml-0"
+          :user-birthdate="userBirthdate"
+          :user-age="userAge"
+          @update:userBirthdate="updateBirthdate"
+          @update:userAge="updateAge"
+        />
+        <div class="sub-title mb-2">最終学歴（学校名） <span class="required-mark">※</span></div>
+        <v-col cols="4">
+          <v-text-field
+            class="ml-2"
+            v-model="userEducation"
             placeholder="入力してください。"
             clearable
             required
             variant="solo"
+            :rules="inputRules.userEducation"
           ></v-text-field>
         </v-col>
-        <v-col class="py-0 ml-2" cols="2">
-          <v-select
-            label="資格取得年"
-            v-model="licenses[index].year"
-            variant="outlined"
-            :items="yearList"
-            required
+        <v-row>
+          <v-col cols="4" class="sub-title mb-2">取得資格</v-col>
+          <v-col class="sub-title ml-0 mb-2">取得年月</v-col>
+        </v-row>
+        <div v-for="(license, index) in licenses" :key="index" class="d-flex align-center mb-2">
+          <v-col class="py-0 ml-2" cols="4">
+            <v-text-field
+              v-model="licenses[index].license"
+              placeholder="入力してください。"
+              clearable
+              required
+              variant="solo"
+            ></v-text-field>
+          </v-col>
+          <v-col class="py-0 ml-2" cols="2">
+            <v-select
+              label="資格取得年"
+              v-model="licenses[index].year"
+              variant="outlined"
+              :items="yearList"
+              required
+            >
+            </v-select>
+          </v-col>
+          <div>年</div>
+          <v-col class="py-0 ml-2" cols="1">
+            <v-select
+              label="資格取得月"
+              v-model="licenses[index].month"
+              variant="outlined"
+              :items="monthList"
+              width="120%"
+              required
+            >
+            </v-select>
+          </v-col>
+          <div class="ml-5">月</div>
+          <v-btn
+            icon
+            class="mb-6"
+            variant="text"
+            @click="addOrRemoveField(index)"
+            :color="license.isLast ? 'primary' : 'red'"
           >
-          </v-select>
+            <v-icon>
+              {{ license.isLast ? 'mdi-plus' : 'mdi-minus' }}
+            </v-icon>
+          </v-btn>
+        </div>
+      </v-card>
+      <v-card>
+        <v-card-title>詳細経歴登録</v-card-title>
+        <v-col cols="12">
+          <v-divider class="border-opacity-25 mb-4"></v-divider>
         </v-col>
-        <div>年</div>
-        <v-col class="py-0 ml-2" cols="1">
-          <v-select
-            label="資格取得月"
-            v-model="licenses[index].month"
-            variant="outlined"
-            :items="monthList"
-            width="120%"
-            required
-          >
-          </v-select>
-        </v-col>
-        <div class="ml-5">月</div>
-        <v-btn
-          icon
-          class="mb-6"
-          variant="text"
-          @click="addOrRemoveField(index)"
-          :color="license.isLast ? 'primary' : 'red'"
-        >
-          <v-icon>
-            {{ license.isLast ? 'mdi-plus' : 'mdi-minus' }}
-          </v-icon>
+        <div v-for="(detail, index) in userDetailList" :key="detail.no">
+          <UserProfileDetail
+            :number="index + 1"
+            v-model="userDetailList[index]"
+            :isDeletable="index !== 0"
+            @update:userProfileDetail="updateUserProfileDetail($event, index)"
+            @removeDetail="removeDetail(index)"
+            @loadingChange="handleLoading"
+          />
+        </div>
+      </v-card>
+      <v-col cols="8" class="mx-lg-auto">
+        <v-btn color="#448AFF" size="x-large" variant="elevated" block @click="addDetail">
+          <v-icon>mdi-plus</v-icon>
+          業務経歴追加
         </v-btn>
-      </div>
-    </v-card>
-    <v-card>
-      <v-card-title>詳細経歴登録</v-card-title>
-      <v-col cols="12">
-        <v-divider class="border-opacity-25 mb-4"></v-divider>
       </v-col>
-      <div v-for="(detail, index) in userDetailList" :key="detail.no">
-        <UserProfileDetail
-          :number="index + 1"
-          v-model="userDetailList[index]"
-          :isDeletable="index !== 0"
-          @update:userProfileDetail="updateUserProfileDetail($event, index)"
-          @removeDetail="removeDetail(index)"
-          @loadingChange="handleLoading"
-        />
-      </div>
-    </v-card>
-    <v-col cols="8" class="mx-lg-auto">
-      <v-btn color="#448AFF" size="x-large" variant="elevated" block @click="addDetail">
-        <v-icon>mdi-plus</v-icon>
-        業務経歴追加
-      </v-btn>
-    </v-col>
-  </div>
+    </div>
+  </v-form>
   <div class="align-self my-6">
     <v-row>
       <v-col cols="6">
@@ -270,7 +274,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, watch, computed, onMounted, reactive } from 'vue'
 import BirthdateForm from '../components/BirthdateForm.vue'
 import UserProfileDetail from '../components/UserProfileDetail.vue'
 import UserProfileConfirm from '../components/UserProfileConfirm.vue'
@@ -312,9 +316,7 @@ const loading = ref(true)
 const userName = ref('')
 const userNameFurikana = ref('')
 const userPassWord = ref('')
-const userPassWordCheck = ref('')
-const show1 = ref(false)
-const show2 = ref(false)
+const show = ref(false)
 const secretKey = ref(import.meta.env.VITE_SECRET_KEY)
 const userEmail = ref('')
 const userComperny = ref('')
@@ -329,6 +331,9 @@ const yearList = ref([])
 // 取得資格の月リスト
 const monthList = ref([])
 const userAge = ref('')
+// validation
+const validateForm = ref(null)
+const formKey = ref(0)
 // dialog
 const dialogFlg = ref(false)
 const dialogRegisterFlg = ref(false)
@@ -385,6 +390,23 @@ watch(
   }
 )
 
+// 各入力フィールド用のルール
+const inputRules = reactive({
+  userName: [(val) => !!val || '氏名は必須です'],
+  userNameFurikana: [(val) => !!val || 'フリガナは必須です'],
+  userPassWord: [
+    (val) => !!val || 'パスワードは必須です',
+    (val) => val.length >= 8 || 'パスワードは8桁以上で入力してください'
+  ],
+  userEmail: [
+    (val) => !!val || 'E-mailは必須です',
+    (val) => /.+@.+\..+/.test(val) || '正しいメールアドレスを入力してください'
+  ],
+  userComperny: [(val) => !!val || '所属会社名は必須です'],
+  userAdress: [(val) => !!val || '住所は必須です'],
+  userEducation: [(val) => !!val || '最終学歴は必須です']
+})
+
 const addOrRemoveField = (index) => {
   if (licenses.value[index].isLast) {
     // 新しいフィールドを追加
@@ -440,7 +462,18 @@ const updateAge = (newAge) => {
   userAge.value = newAge
 }
 
-const toggleDialog = () => {
+const toggleDialog = async () => {
+  // validate check
+  if (validateForm.value) {
+    const validationResult = await validateForm.value.validate()
+
+    if (!validationResult.valid) {
+      $toast.error('入力に間違いがあります')
+      loading.value = false
+      return false
+    }
+  }
+
   dialogFlg.value = true
 }
 
@@ -504,7 +537,7 @@ const handleRegister = async () => {
   if (!isEditMode.value) {
     const registerResult = await request('registerUserProfile', userProfileCopy)
     if (!registerResult.call) {
-      $toast.error('登録に失敗しました。')
+      $toast.error(registerResult.message)
       loading.value = false
       dialogRegisterFlg.value = false
       profileConfirmFlg.value = false
@@ -516,7 +549,7 @@ const handleRegister = async () => {
     // 修正モード
     const registerResult = await request('updateUserProfile', userProfileCopy)
     if (!registerResult.call) {
-      $toast.error('修正に失敗しました。')
+      $toast.error(registerResult.message)
       loading.value = false
       dialogRegisterFlg.value = false
       profileConfirmFlg.value = false
@@ -530,6 +563,7 @@ const handleRegister = async () => {
   profileConfirmFlg.value = false
   isEditMode.value = false // 修正モードを解除
   initData()
+  formKey.value++
   $toast.success(message)
 }
 
@@ -542,7 +576,6 @@ const initData = () => {
   userName.value = ''
   userNameFurikana.value = ''
   userPassWord.value = ''
-  userPassWordCheck.value = ''
   userEmail.value = ''
   userComperny.value = ''
   userAdress.value = ''
@@ -618,6 +651,15 @@ const submitButtonLabel = computed(() => (isEditMode.value ? '修正' : '登録'
 
 const handleClickClear = () => {
   initData()
+
+  // フォームのバリデーション状態をリセット
+  if (validateForm.value) {
+    validateForm.value.resetValidation()
+  }
+
+  // フォームを再レンダリングするためにコンポーネントキーを更新
+  formKey.value++
+
   $toast.open({
     type: 'success',
     message: 'クリアしました。',
@@ -656,5 +698,9 @@ const updateUserInfoDialog = (value) => {
 }
 .align-self {
   align-self: flex-end;
+}
+.text-light-gray {
+  margin-left: 15px;
+  color: #b0b0b0;
 }
 </style>

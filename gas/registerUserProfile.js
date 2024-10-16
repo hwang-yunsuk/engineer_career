@@ -9,6 +9,19 @@ function registerUserProfile(data) {
 
   const userProfileLastRow = userProfileSheet.getLastRow()
 
+  // userProfileシートのuserEmail列の全データを取得
+  const userEmails = userProfileSheet.getRange(2, 4, userProfileSheet.getLastRow() - 1).getValues()
+
+  // userEmailの重複確認
+  const emailExists = userEmails.some((row) => row[0] === payload.userEmail)
+
+  if (emailExists) {
+    return JSON.stringify({
+      call: false,
+      message: 'このメールアドレスは既に登録されています。'
+    })
+  }
+
   // ユーザープロフィール情報を取得し、スプレッドシートに登録
   const licenses = payload.licenses.map((license) => license.value).join('\n')
   const userProfileRow = [

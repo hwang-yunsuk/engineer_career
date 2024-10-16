@@ -21,6 +21,12 @@
         </v-row>
       </v-col>
     </v-row>
+    <!-- 全体表示ボタン -->
+    <div v-if="hasMoreOptions" class="text-right mt-4">
+      <v-btn color="primary" @click="toggleExpand" variant="text">
+        {{ isExpanded ? '折りたたむ' : '全体表示' }}
+      </v-btn>
+    </div>
     <h5 class="mb-4">その他</h5>
     <v-col cols="6">
       <v-textarea
@@ -28,16 +34,10 @@
         rows="1"
         variant="solo"
         outlined
+        :rules="optionRules"
         @input="updateSelection"
       ></v-textarea>
     </v-col>
-
-    <!-- 全体表示ボタン -->
-    <div v-if="hasMoreOptions" class="text-right mt-4">
-      <v-btn color="primary" @click="toggleExpand" variant="text">
-        {{ isExpanded ? '折りたたむ' : '全体表示' }}
-      </v-btn>
-    </div>
   </div>
 </template>
 
@@ -66,6 +66,7 @@ const emit = defineEmits(['update:selectOption'])
 // State
 const isExpanded = ref(false)
 const selectedOptions = ref({})
+const selectedItems = ref([])
 const optionEtc = ref('')
 
 // 初期化または親からのリセットの際に `selectedOptions` を初期化
@@ -82,7 +83,13 @@ const initializeOptions = () => {
     (item) => !Object.keys(selectedOptions.value).includes(item)
   )
   if (etcOption) {
-    optionEtc.value = etcOption
+    if (typeof etcOption === 'object' && etcOption.optionEtcEdit) {
+      // ()を取り除いた値をoptionEtcに設定
+      optionEtc.value = etcOption.optionEtcEdit.replace(/^\((.*)\)$/, '$1')
+    } else {
+      // 文字列として直接設定
+      optionEtc.value = etcOption
+    }
   }
 }
 
@@ -106,6 +113,22 @@ watch(
   { deep: true }
 )
 
+// バリデーション関数
+const validateOptions = () => {
+  // selectedOptions.value に true が1つでも含まれているかどうかをチェック
+  const hasSelectedOption = Object.values(selectedOptions.value).some((value) => value === true)
+
+  // selectedItems に1つ以上の要素がある、または hasSelectedOption もしくは optionEtc.value がある場合はバリデーションを通す
+  return selectedItems.value.length > 0 || hasSelectedOption || optionEtc.value
+    ? true
+    : '1つ以上、選択してください。'
+}
+
+// バリデーションルール
+const optionRules = computed(() => {
+  return [validateOptions]
+})
+
 // 表示するtypeを制御する計算プロパティ
 const displayedTypes = computed(() => {
   const typesArray = Object.values(props.options)
@@ -124,16 +147,14 @@ const hasMoreOptions = computed(() => {
 
 // 選択状態を管理
 const updateSelection = () => {
-  const selectedItems = Object.keys(selectedOptions.value).filter(
+  selectedItems.value = Object.keys(selectedOptions.value).filter(
     (key) => selectedOptions.value[key]
   )
-
   if (optionEtc.value) {
-    // その他入力フラグ
-    selectedItems.push(optionEtc.value, { optionEtcEdit: `(${optionEtc.value})` })
+    selectedItems.value.push(optionEtc.value, { optionEtcEdit: `(${optionEtc.value})` })
   }
-
-  emit('update:selectOption', selectedItems)
+  validateOptions()
+  emit('update:selectOption', selectedItems.value)
 }
 
 // 全体表示と折りたたみを切り替える

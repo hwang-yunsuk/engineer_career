@@ -11,6 +11,7 @@
         outlined
         clearable
         variant="solo"
+        :rules="[(val) => !!val || '生年月日は必須です']"
         @click:clear="handleClear"
       ></v-text-field>
     </template>

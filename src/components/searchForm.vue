@@ -232,22 +232,26 @@
         <v-col class="d-flex" cols="12">
           <v-row>
             <v-col cols="1" class="pr-0 py-0">
-              <v-sheet class="text-center meisho" color="cyan-darken-3" border height="80px">
+              <v-sheet class="text-center meisho" color="cyan-darken-3" border height="40px">
                 <sheet-footer>システム名</sheet-footer>
               </v-sheet>
             </v-col>
-            <v-col cols="3" class="px-0 py-0">
-              <v-sheet class="meisho" border height="80px">
+            <v-col cols="10" class="px-0 py-0">
+              <v-sheet class="meisho" border height="40px">
                 <sheet-footer>{{ detail.systemName }}</sheet-footer>
               </v-sheet>
             </v-col>
-            <v-col cols="1" class="px-0 py-0">
-              <v-sheet class="text-center meisho" color="cyan-darken-3" border height="80px">
+          </v-row>
+        </v-col>
+        <v-col class="d-flex" cols="12">
+          <v-row>
+            <v-col cols="1" class="pr-0 py-0">
+              <v-sheet class="text-center meisho" color="cyan-darken-3" border height="180px">
                 <sheet-footer>業務・作業内容</sheet-footer>
               </v-sheet>
             </v-col>
-            <v-col cols="6" class="px-0 py-0">
-              <v-sheet class="meisho" border height="80px" style="overflow-y: auto">
+            <v-col cols="10" class="px-0 py-0">
+              <v-sheet class="meisho" border height="180px" style="overflow-y: auto">
                 <sheet-footer class="text-pre-line">{{ detail.workDetails }}</sheet-footer>
               </v-sheet>
             </v-col>

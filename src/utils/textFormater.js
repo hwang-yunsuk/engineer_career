@@ -20,6 +20,10 @@ export function processOption(item) {
 
 // 資格情報の解析関数
 export function parseLicenses(licensesString) {
+  if (!licensesString) {
+    return [{ value: '', license: '', year: '', month: '', isLast: true }]
+  }
+
   const licensesArray = licensesString.split('\n').map((license) => {
     const [licenseName, date] = license.split(' ')
     const [year, month] = date.split('/')
@@ -31,5 +35,5 @@ export function parseLicenses(licensesString) {
     licensesArray[licensesArray.length - 1].isLast = true
   }
 
-  return licensesArray
+  return licensesArray ?? [{ value: '', license: '', year: '', month: '', isLast: true }]
 }

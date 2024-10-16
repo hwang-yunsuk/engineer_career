@@ -82,7 +82,7 @@ function fillUserProfileData(sheet, payload, getUserDetailList) {
         sheet.getRange(`A${currentRow}:Y${currentRow}`).setBackground('#dcdcdc')
       }
 
-      // 行の高さを187ピクセルに設定
+      // 行の高さを基本187ピクセルに設定
       sheet.setRowHeight(currentRow, 187)
 
       // コピーした行のデータを削除（初期化）
@@ -92,12 +92,22 @@ function fillUserProfileData(sheet, payload, getUserDetailList) {
     // 詳細情報の入力
     sheet.getRange(`A${currentRow}`).setValue(index + 1)
     sheet.getRange(`B${currentRow}`).setValue(detail.startDate)
+    const csheet = sheet.getRange(`C${currentRow}`)
+    if (csheet != '') {
+      csheet.setValue('～')
+    }
     sheet.getRange(`D${currentRow}`).setValue(detail.endDate)
     sheet.getRange(`E${currentRow}`).setValue(detail.monthOfNumber)
     sheet.getRange(`F${currentRow}`).setValue(detail.businessCategory)
 
     const systemAndDetails = detail.systemName + '\n' + detail.workDetails
-    sheet.getRange(`G${currentRow}`).setValue(systemAndDetails)
+    const systemAndDetailsCell = sheet.getRange(`G${currentRow}`)
+    systemAndDetailsCell.setValue(systemAndDetails)
+
+    // 文字数に基づいて行の高さを設定
+    const estimatedHeight = estimateRowHeight(systemAndDetails)
+    // 既に 187px 以上であればそのまま、187px 未満であれば既定の 187px を維持
+    sheet.setRowHeight(currentRow, estimatedHeight)
 
     sheet.getRange(`H${currentRow}`).setValue(detail.osTypeOption)
     sheet.getRange(`I${currentRow}`).setValue(detail.dbTypeOption)
@@ -182,4 +192,19 @@ function generatePdfFromSheet(sheet) {
   })
 
   return response.getBlob().setName(sheet.getName() + '.pdf')
+}
+
+function estimateRowHeight(content) {
+  // 1行あたりの標準の高さ（ピクセル）
+  const baseHeight = 15
+  const minHeight = 187 // 最低高さ
+  // 1行あたりの平均文字数
+  const avgCharsPerLine = 60 // 長い文章に合わせて調整
+  // 改行数を取得
+  const lineBreaks = content.split('\n').length - 1
+  // 改行を含めてコンテンツの長さに応じた高さを計算
+  const numLines = Math.ceil(content.length / avgCharsPerLine) + lineBreaks
+  const estimatedHeight = baseHeight * numLines
+  // 最低高さ以上であればその高さを返し、それ以下なら最低高さを返す
+  return Math.max(estimatedHeight, minHeight)
 }
