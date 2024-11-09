@@ -196,6 +196,7 @@
             :number="index + 1"
             v-model="userDetailList[index]"
             :isDeletable="index !== 0"
+            :option-list="detailOptionList"
             @update:userProfileDetail="updateUserProfileDetail($event, index)"
             @removeDetail="removeDetail(index)"
             @loadingChange="handleLoading"
@@ -340,6 +341,8 @@ const dialogRegisterFlg = ref(false)
 const profileConfirmFlg = ref(false)
 const userProfile = ref({})
 const isEditMode = ref(false)
+// 詳細のoptionList
+const detailOptionList = ref({})
 const userDetailList = ref([
   {
     no: 1,
@@ -356,7 +359,8 @@ const userDetailList = ref([
   }
 ])
 
-onMounted(() => {
+onMounted(async () => {
+  loading.value = true
   // 現在の年を取得
   const currentYear = new Date().getFullYear()
 
@@ -368,6 +372,21 @@ onMounted(() => {
   // 1月から12月までのリストを作成してセット
   for (let i = 1; i <= 12; i++) {
     monthList.value.push(String(i).padStart(2, '0'))
+  }
+
+  try {
+    // オプションリストを取得
+    const getOptionList = await request('apiGetOptionList')
+    detailOptionList.value = getOptionList.data
+    console.log('detailOptionList.value : ', detailOptionList.value)
+    loading.value = false
+  } catch (error) {
+    $toast.error('データの取得中にエラーが発生しました' + '<br>' + error)
+
+    // 1秒待機後にローディングを解除
+    setTimeout(() => {
+      loading.value = false
+    }, 1000)
   }
   initData()
 })

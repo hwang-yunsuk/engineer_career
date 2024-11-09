@@ -12,7 +12,8 @@ function apiUserProfilePrint(data) {
 
   const profileTemplateSheet = ss.getSheetByName('profileTemplate')
   const printSheet = profileTemplateSheet.copyTo(ss)
-  printSheet.setName(userName + '_' + new Date().getTime())
+  const timestamp = formatDate(new Date())
+  printSheet.setName(userName + '_' + timestamp)
 
   const getUserDetailList = getUserSearchDetailList(ss, payload.userName, payload.userEmail)
 
@@ -28,7 +29,12 @@ function apiUserProfilePrint(data) {
   // すべての変更を強制的に適用
   SpreadsheetApp.flush()
 
+  // 印刷対象をPDF化
   const pdfBlob = generatePdfFromSheet(printSheet)
+
+  // 印刷したシート数が6個以上の場合、一番古いシートを削除
+  countAndRemoveOldestSheetWithTimestampFormat(ss)
+
   return JSON.stringify({
     data: pdfBlob.getBytes(),
     call: true,
@@ -207,4 +213,48 @@ function estimateRowHeight(content) {
   const estimatedHeight = baseHeight * numLines
   // 最低高さ以上であればその高さを返し、それ以下なら最低高さを返す
   return Math.max(estimatedHeight, minHeight)
+}
+
+// 日付を yyyymmdd_hhmmss 形式で取得する関数
+function formatDate(date) {
+  const yyyy = date.getFullYear()
+  const mm = ('0' + (date.getMonth() + 1)).slice(-2) // 月は0から始まるため +1
+  const dd = ('0' + date.getDate()).slice(-2)
+  const hh = ('0' + date.getHours()).slice(-2)
+  const min = ('0' + date.getMinutes()).slice(-2)
+  const ss = ('0' + date.getSeconds()).slice(-2)
+  return `${yyyy}${mm}${dd}_${hh}${min}${ss}`
+}
+
+function countAndRemoveOldestSheetWithTimestampFormat(ss) {
+  const sheets = ss.getSheets()
+
+  // 「yyyymmdd_hhmmss」の形式をチェックする正規表現
+  const timestampRegex = /\d{8}_\d{6}$/
+
+  // タイムスタンプ形式のシート名とシートのリストを収集
+  const timestampSheets = sheets
+    .filter((sheet) => timestampRegex.test(sheet.getName()))
+    .map((sheet) => ({
+      sheet: sheet,
+      name: sheet.getName(),
+      timestamp: new Date(
+        sheet.getName().slice(0, 4), // 年
+        sheet.getName().slice(4, 6) - 1, // 月（0から始まるため-1）
+        sheet.getName().slice(6, 8), // 日
+        sheet.getName().slice(9, 11), // 時
+        sheet.getName().slice(11, 13), // 分
+        sheet.getName().slice(13, 15) // 秒
+      )
+    }))
+
+  // 対象のシートが6個以上の場合、最も古いシートを削除
+  if (timestampSheets.length >= 6) {
+    // タイムスタンプで昇順に並べ替え
+    timestampSheets.sort((a, b) => a.timestamp - b.timestamp)
+
+    // 最も古いシートを削除
+    const oldestSheet = timestampSheets[0].sheet
+    ss.deleteSheet(oldestSheet)
+  }
 }

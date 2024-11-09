@@ -85,12 +85,17 @@ function registerUserProfile(data) {
     payload.userEmail,
     '一般',
     true,
+    null,
+    false,
     new Date(),
     null
   ]
 
   // userInfo シートに行を追加
   userInfoSheet.appendRow(userInfoRow)
+
+  // 管理者にSlack通知
+  postMessageToSlack(payload.userName)
 
   return JSON.stringify({
     call: true,

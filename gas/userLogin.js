@@ -15,7 +15,8 @@ function apiUserLogin(data) {
 
   // userProfileシートのヘッダーを除くデータをループ
   for (let i = 1; i < userInfoData.length; i++) {
-    const [no, userName, userPassWord, userEmail, authority, validFlg] = userInfoData[i]
+    const [no, userName, userPassWord, userEmail, authority, validFlg, slackId, notifyFlg] =
+      userInfoData[i]
 
     // メールアドレスが一致
     if (userEmail.toLowerCase() === inputEmail) {

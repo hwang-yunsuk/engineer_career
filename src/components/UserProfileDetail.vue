@@ -149,8 +149,6 @@
 <script setup>
 import { ref, computed, watch, onMounted, reactive } from 'vue'
 import { constObj } from '@/const.js'
-import { useToast } from 'vue-toast-notification'
-import { request } from '../api/utils'
 import checkbox from '@/hooks/checkbox.vue'
 
 const props = defineProps({
@@ -165,6 +163,10 @@ const props = defineProps({
   isDeletable: {
     type: Boolean,
     default: false
+  },
+  optionList: {
+    type: Object,
+    default: () => ({})
   }
 })
 
@@ -183,11 +185,9 @@ const projectPhaseOptionLabel = ref('projectPhase')
 const yearList = ref([])
 // 取得資格の月リスト
 const monthList = ref([])
-const optionList = ref({})
+// const optionList = ref({})
 const localDetail = ref({ ...props.modelValue })
-
-// toast
-const $toast = useToast()
+const optionList = ref(props.optionList)
 
 // Propsが変更されたときにローカルデータを更新
 watch(
@@ -270,23 +270,25 @@ watch([startYear, startMonth, endYear, endMonth], calculateMonthDifference)
 
 // OSの選択肢を配列に設定
 const osOptions = computed(() => {
-  return optionList.value.osTypes ? Object.values(optionList.value.osTypes) : []
+  return optionList.value && optionList.value.osTypes ? Object.values(optionList.value.osTypes) : []
 })
 // DBの選択肢を配列に設定
 const dbOptions = computed(() => {
-  return optionList.value.databaseTypes ? Object.values(optionList.value.databaseTypes) : []
+  return optionList.value && optionList.value.databaseTypes
+    ? Object.values(optionList.value.databaseTypes)
+    : []
 })
-
 // 開発言語/ツールの選択肢を配列に設定
 const developmentOptions = computed(() => {
-  return optionList.value.developmentLanguagesAndTools
+  return optionList.value && optionList.value.developmentLanguagesAndTools
     ? Object.values(optionList.value.developmentLanguagesAndTools)
     : []
 })
-
 // 担当工程の選択肢を配列に設定
 const projectPhaseOptions = computed(() => {
-  return optionList.value.projectPhase ? Object.values(optionList.value.projectPhase) : []
+  return optionList.value && optionList.value.projectPhase
+    ? Object.values(optionList.value.projectPhase)
+    : []
 })
 
 // 各入力フィールド用のルール
@@ -300,23 +302,6 @@ const inputDetailRules = reactive({
   workDetails: [(val) => !!val || '業務・作業内容は必須です']
 })
 
-const initData = async () => {
-  emit('loadingChange', true)
-  try {
-    // オプションリストを取得
-    const getOptionList = await request('apiGetOptionList')
-    optionList.value = getOptionList.data
-    emit('loadingChange', false)
-  } catch (error) {
-    $toast.error('データの取得中にエラーが発生しました' + '<br>' + error)
-
-    // 1秒待機後にローディングを解除
-    setTimeout(() => {
-      emit('loadingChange', false)
-    }, 1000)
-  }
-}
-
 onMounted(async () => {
   // 現在の年を取得
   const currentYear = new Date().getFullYear()
@@ -329,7 +314,7 @@ onMounted(async () => {
     monthList.value.push(String(i).padStart(2, '0'))
   }
   // init処理
-  await initData()
+  // await initData()
 })
 </script>
 
